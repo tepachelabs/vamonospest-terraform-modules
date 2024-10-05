@@ -10,7 +10,8 @@ module "dynamodb_table" {
   version = "~> 2.0"
 
   name         = var.dynamodb_table_name
-  hash_key     = "id"
+  hash_key     = "PK"
+  range_key    = "SK"
   billing_mode = "PAY_PER_REQUEST"
 
   attributes = [
@@ -20,6 +21,14 @@ module "dynamodb_table" {
     },
     {
       name = "SK"
+      type = "S"
+    },
+    {
+      name = "provider_id",
+      type = "S"
+    },
+    {
+      name = "service_date",
       type = "S"
     }
   ]
