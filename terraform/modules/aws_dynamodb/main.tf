@@ -85,7 +85,7 @@ resource "aws_iam_role_policy" "dynamodb_access_policy" {
           "dynamodb:Scan",
           "dynamodb:Query",
         ],
-        Resource = "arn:aws:dynamodb:us-west-2:${data.aws_caller_identity.current.account_id}:table/${module.dynamodb_table.dynamodb_table_arn}"
+        Resource = module.dynamodb_table.dynamodb_table_arn
       },
       {
         Effect   = "Allow",
