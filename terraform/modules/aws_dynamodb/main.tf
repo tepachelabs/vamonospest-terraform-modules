@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-west-2"  # Specify your AWS region
+  region = "us-west-2"
 }
 
 # Data source to fetch the current AWS account ID
@@ -7,16 +7,29 @@ data "aws_caller_identity" "current" {}
 
 module "dynamodb_table" {
   source  = "terraform-aws-modules/dynamodb-table/aws"
-  version = "~> 2.0"  # Make sure to use the latest version
+  version = "~> 2.0"
 
-  name           = var.dynamodb_table_name  # Use the variable here
-  hash_key       = "id"
-  billing_mode   = "PAY_PER_REQUEST"  # Use "PROVISIONED" if you need provisioned throughput
+  name         = var.dynamodb_table_name
+  hash_key     = "id"
+  billing_mode = "PAY_PER_REQUEST"
 
   attributes = [
     {
-      name = "id"
+      name = "PK"
       type = "S"
+    },
+    {
+      name = "SK"
+      type = "S"
+    }
+  ]
+
+  global_secondary_indexes = [
+    {
+      name            = "GSI_ProviderID"
+      hash_key        = "provider_id"
+      range_key       = "service_date"
+      projection_type = "ALL"
     }
   ]
 
@@ -62,14 +75,13 @@ resource "aws_iam_role_policy" "dynamodb_access_policy" {
           "dynamodb:DeleteItem",
           "dynamodb:Scan",
           "dynamodb:Query",
-          "dynamodb:ListTables"  # Ensure this is added to allow listing tables
         ],
-        Resource = "arn:aws:dynamodb:us-west-2:${data.aws_caller_identity.current.account_id}:table/*"
+        Resource = "arn:aws:dynamodb:us-west-2:${data.aws_caller_identity.current.account_id}:table/${module.dynamodb_table.dynamodb_table_arn}"
       },
       {
-        Effect = "Allow",
-        Action = "dynamodb:ListTables",
-        Resource = "*"  # Wildcard needed to allow listing of all tables
+        Effect   = "Allow",
+        Action   = "dynamodb:ListTables",
+        Resource = "*"
       }
     ]
   })
@@ -83,8 +95,8 @@ resource "aws_iam_user_policy" "dynamodb_user_assume_role_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Action = "sts:AssumeRole",
+        Effect   = "Allow",
+        Action   = "sts:AssumeRole",
         Resource = aws_iam_role.dynamodb_role.arn
       }
     ]

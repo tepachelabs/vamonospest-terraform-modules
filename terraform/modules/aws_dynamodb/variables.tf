@@ -1,7 +1,7 @@
 variable "dynamodb_table_name" {
   description = "The name of the DynamoDB table"
   type        = string
-  default     = "visits-table"
+  default     = "VamonosPestControl"
 }
 
 variable "dynamodb_tag_name" {
@@ -13,5 +13,5 @@ variable "dynamodb_tag_name" {
 variable "dynamodb_user_name" {
   description = "The name of the DynamoDB user"
   type        = string
-  default     = "retool-user"
+  default     = "dynamodb-user"
 }

@@ -9,7 +9,7 @@ output "dynamodb_table_id" {
 }
 
 output "dynamodb_table_stream_arn" {
-  value       = module.dynamodb_table.dynamodb_table_stream_arn
+  value = module.dynamodb_table.dynamodb_table_stream_arn
 }
 
 # Output the Access Key ID and Secret Access Key (for Retool)
