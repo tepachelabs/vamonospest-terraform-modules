@@ -4,14 +4,17 @@ variable "dynamodb_table_name" {
   default     = "VamonosPestControl"
 }
 
+variable "environment" {
+  default = "prod"
+}
+
 variable "dynamodb_tag_name" {
   description = "The name of the DynamoDB table tag"
   type        = string
   default     = "Vamonospest Terraform"
 }
 
-variable "dynamodb_user_name" {
+variable "user_name" {
   description = "The name of the DynamoDB user"
   type        = string
-  default     = "dynamodb-user"
 }

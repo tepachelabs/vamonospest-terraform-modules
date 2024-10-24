@@ -1,8 +1,3 @@
-provider "aws" {
-  region = "us-west-2"
-}
-
-# Data source to fetch the current AWS account ID
 data "aws_caller_identity" "current" {}
 
 module "dynamodb_table" {
@@ -49,7 +44,7 @@ module "dynamodb_table" {
 }
 
 resource "aws_iam_role" "dynamodb_role" {
-  name = "${var.dynamodb_user_name}-dynamodb-role"
+  name = "${var.user_name}-dynamodb-role"
 
   assume_role_policy = <<EOF
 {
@@ -58,7 +53,7 @@ resource "aws_iam_role" "dynamodb_role" {
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/${aws_iam_user.dynamodb_user.name}"
+        "AWS": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/${var.user_name}"
       },
       "Action": "sts:AssumeRole"
     }
@@ -69,7 +64,7 @@ EOF
 
 # Attach a policy to the role allowing access to the DynamoDB table and listing tables
 resource "aws_iam_role_policy" "dynamodb_access_policy" {
-  name = "${var.dynamodb_user_name}-dynamodb-access-policy"
+  name = "${var.user_name}-dynamodb-access-policy"
   role = aws_iam_role.dynamodb_role.id
 
   policy = jsonencode({
@@ -97,8 +92,8 @@ resource "aws_iam_role_policy" "dynamodb_access_policy" {
 }
 
 resource "aws_iam_user_policy" "dynamodb_user_assume_role_policy" {
-  name = "${var.dynamodb_user_name}-dynamodb-assume-role-policy"
-  user = aws_iam_user.dynamodb_user.name
+  name = "${var.user_name}-dynamodb-assume-role-policy"
+  user = var.user_name
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -112,15 +107,10 @@ resource "aws_iam_user_policy" "dynamodb_user_assume_role_policy" {
   })
 }
 
-# Create an IAM user for programmatic access (Retool access)
-resource "aws_iam_user" "dynamodb_user" {
-  name = var.dynamodb_user_name
-}
 
-# Attach an inline policy to the user for access to the DynamoDB table
 resource "aws_iam_user_policy" "dynamodb_user_policy" {
-  name = "${var.dynamodb_user_name}-dynamodb-user-policy"
-  user = aws_iam_user.dynamodb_user.name
+  name = "${var.user_name}-dynamodb-user-policy"
+  user = var.user_name
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -140,10 +130,4 @@ resource "aws_iam_user_policy" "dynamodb_user_policy" {
       }
     ]
   })
-}
-
-
-# Generate access key and secret key for the IAM user
-resource "aws_iam_access_key" "dynamodb_access_key" {
-  user = aws_iam_user.dynamodb_user.name
 }
