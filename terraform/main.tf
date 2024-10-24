@@ -2,19 +2,26 @@ provider "aws" {
   region = var.region
 }
 
-resource "aws_iam_user" "this" {
-  name = "vamonospest-user"
-}
+module "iam_user" {
+  source = "./modules/aws_iam"
 
-resource "aws_iam_access_key" "this" {
-  user = aws_iam_user.this.name
+  user_name = "vamonospest"
+  environment = var.environment
+
+  providers = {
+    aws = aws
+  }
 }
 
 module "s3_bucket" {
   source = "./modules/aws_s3"
 
-  user_name   = aws_iam_user.this.name
-  environment = "prod"
+  user_name   = module.iam_user.aws_user_name
+  environment = var.environment
+
+  providers = {
+    aws = aws
+  }
 }
 
 
@@ -23,8 +30,8 @@ module "dynamodb_table" {
 
   dynamodb_table_name = "VamonosPestControl"
   dynamodb_tag_name   = "VamonosPest Terraform"
-  user_name           = aws_iam_user.this.name
-  environment         = "prod"
+  user_name           = module.iam_user.aws_user_name
+  environment         = var.environment
 
   providers = {
     aws = aws
